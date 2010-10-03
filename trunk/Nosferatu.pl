@@ -37,23 +37,23 @@ nivelJogo:-
        write('**********************************'),nl,nl.
 
 tabuleiro:-
-		write('        Tabuleiro de Jogo        '),nl,
-		write('                                 '),nl,
+		%write('        Tabuleiro de Jogo        '),nl,
+		%write('                                 '),nl,
 		write('    A   B   C   D   E   F   G    '),nl,
 		write('          +---+---+---+          '),nl,
 		write('1         |   |   |   |         1'),nl,
 		write('      +---+---+---+---+---+      '),nl,
-		write('2     |   |   |   |   |   |     2'),nl,
+		write('2     |   | X |   |   | O |     2'),nl,
 		write('  +---+---+---+---+---+---+---+  '),nl,
-		write('3 |   |   |   |   |   |   |   | 3'),nl,
+		write('3 |   |   |   | X |   |   |   | 3'),nl,
 		write('  +---+---+---+---+---+---+---+  '),nl,
-		write('4 |   |   |   |   |   |   |   | 4'),nl,
+		write('4 | N | X |   |   |   | O |   | 4'),nl,
 		write('  +---+---+---+---+---+---+---+  '),nl,
-		write('5 |   |   |   |   |   |   |   | 5'),nl,
+		write('5 |   | X |   | O | O | O |   | 5'),nl,
 		write('  +---+---+---+---+---+---+---+  '),nl,
-		write('6     |   |   |   |   |   |     6'),nl,
+		write('6     |   |   | O | O |   |     6'),nl,
 		write('      +---+---+---+---+---+      '),nl,
-		write('7         |   |   |   |         7'),nl,
+		write('7         |   | O | O |         7'),nl,
 		write('          +---+---+---+          '),nl,
 		write('    A   B   C   D   E   F   G    '),nl,nl.
 	   

@@ -46,27 +46,6 @@ nivelJogo:-
            write('*                                *'),nl,
        write('**********************************'),nl,nl.
 
-tabuleiro1:-
-               %write('        Tabuleiro de Jogo        '),nl,
-               %write('                                 '),nl,
-                write('    A   B   C   D   E   F   G    '),nl,
-                write('          +---+---+---+          '),nl,
-                write('1         |   |   |   |         1'),nl,
-                write('      +---+---+---+---+---+      '),nl,
-                write('2     |   |   |   |   |   |     2'),nl,
-                write('  +---+---+---+---+---+---+---+  '),nl,
-                write('3 |   |   |   |   |   |   |   | 3'),nl,
-                write('  +---+---+---+---+---+---+---+  '),nl,
-                write('4 |   |   |   |   |   |   |   | 4'),nl,
-                write('  +---+---+---+---+---+---+---+  '),nl,
-                write('5 |   |   |   |   |   |   |   | 5'),nl,
-                write('  +---+---+---+---+---+---+---+  '),nl,
-                write('6     |   |   |   |   |   |     6'),nl,
-                write('      +---+---+---+---+---+      '),nl,
-                write('7         |   |   |   |         7'),nl,
-                write('          +---+---+---+          '),nl,
-                write('    A   B   C   D   E   F   G    '),nl,nl.
-
 % V representa estado vazio.
 
 estadoInicial([     [v,v,v],
@@ -79,7 +58,6 @@ estadoInicial([     [v,v,v],
                ]).
 
 % X representa peca preta(Vampiro), O representa peca branca(aldeao), e N peca especial(Nosferatu)
-
 
 possivelEstado([    [v,z,v],
                   [v,x,d,v,o],
@@ -95,13 +73,14 @@ inicio:-
        % mainmenu, modJogo, nl,nl,nivelJogo,
            nl,nl,tabuleiro.
 
-tabuleiro(Tab):- write('   A   B   C   D   E   F   G   '),nl,
-                 linhas([Tab]),
+mostra_tabuleiro(Tab):- write('   A   B   C   D   E   F   G   '),nl,
+                % linhas([Tab]),
                  write('   A   B   C   D   E   F   G   '),nl.
 
-linhas([]).
-linhas([H|T]):- write(' +---+---+---+---+---+---+---+ '), nl, linha(T).
+%linhas([]).
+%linhas([H|T]):- write(' +---+---+---+---+---+---+---+ '), nl, linha(T).
 
-linha([]).
-linha([H|T]):- write(H), write('  '), linhas(T).
+%linha([]).
+%linha([H|T]):- write(H), write('  '), linhas(T).
+
 

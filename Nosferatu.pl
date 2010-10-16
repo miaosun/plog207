@@ -25,7 +25,7 @@ estadoInicial([ [9,9,0,0,0,9,9],
                
 %%% Inicio do programa
 start:- %welcome,
-        write('entrou'),
+        %write('entrou'),
         %menu_start,
         estadoInical(Tab),
         mostra_tabuleiro(Tab).

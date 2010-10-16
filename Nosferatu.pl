@@ -72,52 +72,60 @@ menu_start:-
 
 
 
-mostra_tabuleiro(Tab):- write('   A   B   C   D   E   F   G '),nl,
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%% VISUALIZAÇÃO DO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+mostra_tabuleiro(Tab):- write('    A   B   C   D   E   F   G '),nl,
                  linhas(1,Tab),
-                 write('   A   B   C   D   E   F   G '),nl.
+                 write('    A   B   C   D   E   F   G '),nl.
 
 linhas(_,[]).
 %primeira linha
-linhas(N,[ [H|[H2|T2]] | T]):- H=:=9, H2=:=9, N=\=7, lim(1), write(N), write(' '),
-                  linha([H|[H2|T2]]),
+linhas(N,[H|T]):- N=:=1, lim(1), write(N), write('  '),
+                  linha(H),
+                  write(' '), write(N), nl,
+                  N2 is N+1,
+                  linhas(N2, T).
+%segunda linha
+linhas(N,[H|T]):- N=:=2, lim(2), write(N), write('  '),
+                  linha(H),
+                  write(' '), write(N), nl,
+                  N2 is N+1,
+                  linhas(N2, T).
+%linhas do meio
+linhas(N,[H|T]):- N>2, N<6, lim(3), write(N), write(' |'),
+                  linha(H),
+                  write(' '), write(N), nl,
+                  N2 is N+1,
+                  linhas(N2, T).
+%penultima linha
+linhas(N,[H|T]):- N=:=6, lim(3), write(N), write('  '),
+                  linha(H),
                   write(' '), write(N), nl,
                   N2 is N+1,
                   linhas(N2, T).
 %ultima linha
-linhas(N,[ [H|[H2|T2]] | T]):- H=:=9, H2=:=9, N=:=7, lim(2), write(N), write(' '),
-                  linha([H|[H2|T2]]),
+linhas(N,[H|T]):- N=:=7, lim(2), write(N), write('  '),
+                  linha(H),
                   write(' '), write(N), nl, lim(1),
-                  N2 is N+1,
-                  linhas(N2, T).
-%segunda linha
-linhas(N,[ [H|T] | T2]):- H=:=9, T=\=9, N=\=6, lim(2), write(N), write(' '),
-                  linha(H),
-                  write(' '), write(N), nl,
-                  N2 is N+1,
-                  linhas(N2, T2).
-%penultima linha
-linhas(N,[ [H|T] | T2]):- H=:=9, T=\=9, N=:=6, lim(3), write(N), write(' '),
-                  linha(H),
-                  write(' '), write(N), nl,
-                  N2 is N+1,
-                  linhas(N2, T2).
-%linhas do meio
-linhas(N,[H|T]):- lim(3), write(N), write(' '),
-                  linha(H),
-                  write(' '), write(N), nl,
                   N2 is N+1,
                   linhas(N2, T).
 
 linha([]).
 linha([9|[9|T]]):- write('    '), linha([9|T]).
-linha([9|[H|T]]):- H =\= 9, write('   |'), linha([H|T]).
+linha([9|[H|T]]):- H=\=9, write('   |'), linha([H|T]).
+linha([9|T]):- write('    '), linha(T).
 linha([H|T]):- H=\=9, escreve(H), linha(T).
 
 
-lim(1):- write('         +---+---+---+'), nl.
-lim(2):- write('     +---+---+---+---+---+'), nl.
-lim(3):- write(' +---+---+---+---+---+---+---+'), nl.
-lim(_).
+lim(1):- write('          +---+---+---+'), nl.
+lim(2):- write('      +---+---+---+---+---+'), nl.
+lim(3):- write('  +---+---+---+---+---+---+---+'), nl.
 
 %escreve(N)
 escreve(0):-write('   |').   %vazia

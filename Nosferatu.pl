@@ -25,7 +25,6 @@ estadoInicial([ [9,9,0,0,0,9,9],
 
 %%% Inicio do programa
 start:- welcome,
-        %write('entrou'),nl,nl,
         %menu_start,
         estadoInicial(Tab),
         mostra_tabuleiro(Tab).
@@ -48,27 +47,27 @@ menu_start:-
        write('*   3.Computador VS Computador   *'),nl,
        write('*                                *'),nl,
        write('**********************************'),nl,nl.
- %      repeat, get_code(Op), Op>=49, Op=<51,
-  %     tipo_jogo(Op, Pl1, Pl2),
-   %    assert(jogador(1, Pl1)),
-    %   assert(jogador(2, Pl2)).
+       repeat, get_code(Op), Op>=49, Op=<51,
+       tipo_jogo(Op, Pl1, Pl2),
+       assert(jogador(1, Pl1)),
+       assert(jogador(2, Pl2)).
 
 %% define o tipo de jogo
 %% tipo_jogo(Op, Pl1, Pl2)
-%tipo_jogo(49, humano, humano).
-%tipo_jogo(50, humano, computador).
-%tipo_jogo(51, computador, computador).
+tipo_jogo(49, humano, humano).
+tipo_jogo(50, humano, computador).
+tipo_jogo(51, computador, computador).
 
-%menu_lvl:-
-%       write('**********************************'),nl,
- %          write('*                                *'),nl,
-  %     write('*         Nivel do Jogo          *'),nl,
-   %    write('*                                *'),nl,
-%       write('*            1.Easy              *'),nl,
- %      write('*           2.Normal             *'),nl,
-  %     write('*            3.Hard              *'),nl,
-   %        write('*                                *'),nl,
-%       write('**********************************'),nl,nl.
+menu_lvl:-
+       write('**********************************'),nl,
+       write('*                                *'),nl,
+       write('*         Nivel do Jogo          *'),nl,
+       write('*                                *'),nl,
+       write('*            1.Easy              *'),nl,
+       write('*           2.Normal             *'),nl,
+       write('*            3.Hard              *'),nl,
+       write('*                                *'),nl,
+       write('**********************************'),nl,nl.
 
 
 

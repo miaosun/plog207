@@ -17,7 +17,7 @@
 estadoInicial([ [9,9,0,0,0,9,9],
                 [9,0,0,0,0,0,9],
                 [0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0],
+                [0,0,1,0,0,0,0],
                 [0,0,0,0,0,0,0],
                 [9,0,0,0,0,0,9],
                 [9,9,0,0,0,9,9]
@@ -27,7 +27,10 @@ estadoInicial([ [9,9,0,0,0,9,9],
 start:- welcome,
         menu_start,
         estadoInicial(Tab),
-        mostra_tabuleiro(Tab).
+        mostra_tabuleiro(Tab),
+        pede_casa(X,Y),
+        conteudo_casa(X,Y,V,Tab)
+        write(V).
 
 %% Welcome %%
 welcome:-
@@ -70,6 +73,30 @@ menu_lvl:-
        write('*            3.Hard              *'),nl,
        write('*                                *'),nl,
        write('**********************************'),nl,nl.
+       
+       
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%% METODOS AUXILIARES AO JOGO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%pede casa
+pede_casa(X,Y):- write('linha '), read(SY), Y is SY-1,
+                 write('coluna '), get_code(SX), conv(SX,X).
+                 
+conv(Let,Valor):- maiuscula(Let), Valor is Let-65.
+conv(Let,Valor):- minuscula(Let), Valor is Let-97.
+conv(Let,Valor):- numero(Let), Valor is Let-49.
+
+maiuscula(Let):- Let>=65, Let=<72.
+minuscula(Let):- Let>=97, Let=<104.
+numero(Let):- Let>=48, Let=<56.
+
+% posicao(X,Y,Valor,Tab) verifica o valor da casa X,Y
+conteudo_casa(X,0,Valor,[H|_]):- conteudo_casa_linha(X,Valor,H).
+conteudo_casa(X,Y,Valor,[_|T]):- Y>0, Y2 is Y-1, conteudo_casa(X,Y2,Valor,T).
+
+conteudo_casa_linha(0,Valor,[H|_]):- Valor is H.
+conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1, conteudo_casa_linha(X2,Valor,T).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,9 +106,9 @@ menu_lvl:-
 
 mostra_tabuleiro(Tab):- write('    A   B   C   D   E   F   G '),nl,
                  linhas(1,Tab),
-                 write('    A   B   C   D   E   F   G '),nl.
+                 write('    A   B   C   D   E   F   G '),nl,nl,!.
 
-linhas(_,[]).
+linhas(_,[]):-!.
 %primeira linha
 linhas(N,[H|T]):- N=:=1, lim(1), write(N), write('  '),
                   linha(H),
@@ -113,7 +140,7 @@ linhas(N,[H|T]):- N=:=7, lim(2), write(N), write('  '),
                   N2 is N+1,
                   linhas(N2, T).
 
-linha([]).
+linha([]):-!.
 linha([9|[9|T]]):- write('    '), linha([9|T]).
 linha([9|[H|T]]):- H=\=9, write('   |'), linha([H|T]).
 linha([9|T]):- write('    '), linha(T).
@@ -130,13 +157,6 @@ escreve(1):-write(' o |').   %aldeao
 escreve(2):-write(' $ |').   %vampiro
 escreve(3):-write(' N |').   %nosferatu
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%% METODOS AUXILIARES AO JOGO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% posicao(X,0,Valor,Tab)
-%posicao(X,0,Valor,[H|T]):- posicao(X,0,Valor,H).
-%posicao(X,Y,Valor,[H|T]):- Y2 is Y-1, posicao(X,Y2,Valor,T).
 
 
 

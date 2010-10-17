@@ -17,11 +17,14 @@
 estadoInicial([ [9,9,0,0,0,9,9],
                 [9,0,0,0,0,0,9],
                 [0,0,0,0,0,0,0],
-                [0,0,1,0,0,0,0],
+                [0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0],
                 [9,0,0,0,0,0,9],
                 [9,9,0,0,0,9,9]
                ]).
+
+pecas_al([1,1,1,1,1,1,1,1,1,1,1,1]).
+pecas_v([2,2,2,2,2,3]).
 
 %%% Inicio do programa
 start:- welcome,
@@ -96,8 +99,49 @@ conteudo_casa(X,0,Valor,[H|_]):- conteudo_casa_linha(X,Valor,H).
 conteudo_casa(X,Y,Valor,[_|T]):- Y>0, Y2 is Y-1, conteudo_casa(X,Y2,Valor,T).
 
 conteudo_casa_linha(0,Valor,[H|_]):- Valor is H.
-conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1, conteudo_casa_linha(X2,Valor,T).
+conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1,
+                                     conteudo_casa_linha(X2,Valor,T).
+%%%%%%%%%%%%%%%%%%% INSERIR PEÇAS NO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+insere_peca(X,Y,PL,Tab,Tab_novo):-
+
+% 0 - Nordeste
+% 1 - Sudeste
+% 2 - Sudoeste
+% 3 - Noroeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi<Yf, Dir is 0. %Nordeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi<Yf, Dir is 1. %Sudeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 2. %Sudoeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi>Yf, Dir is 3. %Noroeste
+
+% vizinho(X,Y,Dir,Xf,Yf)
+vizinho(X,Y,0,Xf,Yf):- Xf is X+1, Yf is Y-1.
+vizinho(X,Y,1,Xf,Yf):- Xf is X+1, Yf is Y+1.
+vizinho(X,Y,2,Xf,Yf):- Xf is X-1, Yf is Y+1.
+vizinho(X,Y,3,Xf,Yf):- Xf is X-1, Yf is Y-1.
+
+% get_vizinhos(X,Y,Tab,LV,Dir) devolve em LV uma lista dos valores dos vizinhos
+% Dir deve ser passado com 0
+get_vizinhos(X,Y,Tab,LV,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               conteudo_casa(X2,Y2,V,Tab),
+                               Dir2 is Dir+1,
+                               get_vizinhos(X,Y,Tab,[V|LV],Dir2).
+
+% verifica se nao existe nenhum vizinho inimigo
+processa_vizinhos(_,[]):-!.
+processa_vizinhos(Peca,[H|T]):- Peca=:=1, H=:=0, H=:=9,
+                                processa_vizinhos(Peca,T).
+processa_vizinhos(Peca,[H|T]):- Peca=\=1, H=\=1,
+                                processa_vizinhos(Peca,T).
+
+
+%%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+verifica_peca(Coluna,Linha,Peca,Tab):- conteudo_casa(Coluna,Linha,Valor,Tab),
+                                       Valor>0, Valor<4, Peca is Valor.
+
+verifica_jogada(Xi,Yi,Xf,Yf,Tab):- verifica_peca(Xi,Yi,Peca,Tab),
+                                   conteudo_casa(Xf,Yf,Valor,Tab), Valor=:=0,
+                                   verifica_linha(Xi,Yi,Xf,Yf,Peca,Tab).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%% VISUALIZAÇÃO DO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

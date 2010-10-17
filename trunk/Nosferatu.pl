@@ -25,7 +25,7 @@ estadoInicial([ [9,9,0,0,0,9,9],
 
 %%% Inicio do programa
 start:- welcome,
-        %menu_start,
+        menu_start,
         estadoInicial(Tab),
         mostra_tabuleiro(Tab).
 
@@ -46,8 +46,10 @@ menu_start:-
        write('*     2.Humano VS Computador     *'),nl,
        write('*   3.Computador VS Computador   *'),nl,
        write('*                                *'),nl,
-       write('**********************************'),nl,nl.
-       repeat, get_code(Op), Op>=49, Op=<51,
+       write('**********************************'),nl,nl,
+       write('faca a sua escolha'),nl,repeat, get_code(Op), Op>=49, Op=<51,
+       menu_lvl,
+       write('faca a sua escolha'),nl,repeat, get_code(Op), Op>=49, Op=<51,
        tipo_jogo(Op, Pl1, Pl2),
        assert(jogador(1, Pl1)),
        assert(jogador(2, Pl2)).
@@ -133,8 +135,8 @@ escreve(3):-write(' N |').   %nosferatu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % posicao(X,0,Valor,Tab)
-posicao(X,0,Valor,[H|T]):- posicao(X,0,Valor,H).
-posicao(X,Y,Valor,[H|T]):- Y2 is Y-1, posicao(X,Y2,Valor,T).
+%posicao(X,0,Valor,[H|T]):- posicao(X,0,Valor,H).
+%posicao(X,Y,Valor,[H|T]):- Y2 is Y-1, posicao(X,Y2,Valor,T).
 
 
 

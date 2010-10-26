@@ -28,12 +28,13 @@ pecas_v([2,2,2,2,2,3]).
 
 %%% Inicio do programa
 start:- welcome,
-        menu_start,
+        %menu_start,
         estadoInicial(Tab),
         mostra_tabuleiro(Tab),
         pede_casa(X,Y),
-        conteudo_casa(X,Y,V,Tab)
-        write(V).
+        %conteudo_casa(X,Y,V,Tab),
+        insere_peca(X,Y,3,Tab),
+        mostra_tabuleiro(Tab).
 
 %% Welcome %%
 welcome:-
@@ -103,7 +104,18 @@ conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1,
                                      conteudo_casa_linha(X2,Valor,T).
 %%%%%%%%%%%%%%%%%%% INSERIR PEÇAS NO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-insere_peca(X,Y,PL,Tab,Tab_novo):-
+
+
+insere_peca(X,Y,P,Tab):- casa_valida(X,Y,P,Tab), write('casa valida'),nl,
+                         setCasa(X,Y,P,Tab).
+                                  
+                                  
+setCasa(X,0,P,[H|_]):- setCasaLinha(X,P,H).
+setCasa(X,Y,P,[_|T]):- Y>0, Y2 is Y-1, setCasa(X,Y2,P,T).
+
+setCasaLinha(0,P,[H|_]):- H is P.
+setCasaLinha(X,P,[_|T]):- X>0, X2 is X-1,
+                          setCasaLinha(X2,P,T).
 
 % 0 - Nordeste
 % 1 - Sudeste
@@ -122,17 +134,26 @@ vizinho(X,Y,3,Xf,Yf):- Xf is X-1, Yf is Y-1.
 
 % get_vizinhos(X,Y,Tab,LV,Dir) devolve em LV uma lista dos valores dos vizinhos
 % Dir deve ser passado com 0
-get_vizinhos(X,Y,Tab,LV,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+get_vizinhos(_,_,_,LV,4):- write(LV),nl.
+get_vizinhos(X,Y,Tab,LV,0):- vizinho(X,Y,Dir,X2,Y2),write('get vizinho'),nl, write(X2), write(' '), write(Y2),nl,
+                               conteudo_casa(X2,Y2,V,Tab),
+                               Dir2 is Dir+1,
+                               get_vizinhos(X,Y,Tab,[V],Dir2).
+get_vizinhos(X,Y,Tab,LV,Dir):- Dir=\=0, Dir<4, vizinho(X,Y,Dir,X2,Y2),write('get vizinho'),nl, write(X2), write(' '), write(Y2),nl,
                                conteudo_casa(X2,Y2,V,Tab),
                                Dir2 is Dir+1,
                                get_vizinhos(X,Y,Tab,[V|LV],Dir2).
 
 % verifica se nao existe nenhum vizinho inimigo
-processa_vizinhos(_,[]):-!.
-processa_vizinhos(Peca,[H|T]):- Peca=:=1, H=:=0, H=:=9,
-                                processa_vizinhos(Peca,T).
-processa_vizinhos(Peca,[H|T]):- Peca=\=1, H=\=1,
-                                processa_vizinhos(Peca,T).
+naoTemInimigos(_,[]).
+naoTemInimigos(Peca,[H|T]):- Peca=:=1, H=:=0, H=:=9,
+                                naoTemInimigos(Peca,T).
+naoTemInimigos(Peca,[H|T]):- Peca=:=2; Peca=:=3, H=\=1,
+                                naoTemInimigos(Peca,T).
+                                
+casa_valida(X,Y,Peca,Tab):- conteudo_casa(X,Y,P2,Tab), P2=:=0,
+                            get_vizinhos(X,Y,Tab,LV,0),
+                            naoTemInimigos(Peca,LV).
 
 
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

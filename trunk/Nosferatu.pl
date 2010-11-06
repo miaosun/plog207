@@ -33,8 +33,8 @@ start:- welcome,
         mostra_tabuleiro(Tab),
         pede_casa(X,Y),
         %conteudo_casa(X,Y,V,Tab),
-        insere_peca(X,Y,3,Tab),
-        mostra_tabuleiro(Tab).
+        insere_peca(X,Y,3,Tab,Tab2),
+        mostra_tabuleiro(Tab2).
 
 %% Welcome %%
 welcome:-
@@ -106,16 +106,28 @@ conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1,
 
 
 
-insere_peca(X,Y,P,Tab):- casa_valida(X,Y,P,Tab), write('casa valida'),nl,
-                         setCasa(X,Y,P,Tab).
-                                  
-                                  
-setCasa(X,0,P,[H|_]):- setCasaLinha(X,P,H).
-setCasa(X,Y,P,[_|T]):- Y>0, Y2 is Y-1, setCasa(X,Y2,P,T).
+insere_peca(X,Y,P,Tab,TabN):- casa_valida(X,Y,P,Tab),
+                              muda_tab(P,X,Y,Tab,TabN).
+                              
+muda_tab(Pnov,X,Y,Tab,NovoTab):-
+        muda_tab2(0,Pnov,X,Y,Tab,NovoTab),!.
+        
+muda_tab2(_,_,_,_,[],[]).
+muda_tab2(Y,Pnov,X,Y,[Lin|Resto],[NovLin|Resto2]):-
+        muda_linha(0,Pnov,X,Lin,NovLin),
+        N2 is Y+1,
+        muda_tab2(N2,Pnov,X,Y,Resto,Resto2).
+muda_tab2(N,Pnov,X,Y,[Lin|Resto],[Lin|Resto2]):-
+        N\=Y, N2 is N+1,
+        muda_tab2(N2,Pnov,X,Y,Resto,Resto2).
 
-setCasaLinha(0,P,[H|_]):- H is P.
-setCasaLinha(X,P,[_|T]):- X>0, X2 is X-1,
-                          setCasaLinha(X2,P,T).
+muda_linha(_,_,_,[],[]).
+muda_linha(X,Pnov,X,[_|Resto],[Pnov|Resto2]):-
+        N2 is X+1,
+        muda_linha(N2,Pnov,X,Resto,Resto2).
+muda_linha(N,Pnov,X,[El|Resto],[El|Resto2]):-
+        N\=X, N2 is N+1,
+        muda_linha(N2,Pnov,X,Resto,Resto2).
 
 % 0 - Nordeste
 % 1 - Sudeste
@@ -135,7 +147,7 @@ vizinho(X,Y,3,Xf,Yf):- Xf is X-1, Yf is Y-1.
 % get_vizinhos(X,Y,Tab,LV,Dir) devolve em LV uma lista dos valores dos vizinhos
 % Dir deve ser passado com 0
 get_vizinhos(_,_,_,LV,4):- write(LV),nl.
-get_vizinhos(X,Y,Tab,LV,0):- vizinho(X,Y,Dir,X2,Y2),write('get vizinho'),nl, write(X2), write(' '), write(Y2),nl,
+get_vizinhos(X,Y,Tab,_,0):- vizinho(X,Y,Dir,X2,Y2),write('get vizinho'),nl, write(X2), write(' '), write(Y2),nl,
                                conteudo_casa(X2,Y2,V,Tab),
                                Dir2 is Dir+1,
                                get_vizinhos(X,Y,Tab,[V],Dir2).

@@ -232,6 +232,22 @@ na_linha_come_simples_aux(Peca,X,Y,Xf,Yf,D,Tab):- (Peca=:=3; Peca=:=2),
                                                   P=:=1,
                                                   vizinho(X2,Y2,D,X3,Y3),
                                                   X3=:=Xf, Y3=:=Yf.
+                                                  
+na_linha_come_nosferatu(X,Y,Xf,Yf,Tab):- direccao(X,Y,Xf,Yf,D),
+                                         na_linha_come_nosferatu_aux(X,Y,Xf,Yf,D,Tab).
+
+na_linha_come_nosferatu_aux(X,Y,X,Y,_,_).
+na_linha_come_nosferatu_aux(X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
+                                               get_casa(X2,Y2,P,Tab),
+                                               P=:=0,
+                                               na_linha_come_nosferatu_aux(X2,Y2,Xf,Yf,D,Tab).
+na_linha_come_nosferatu_aux(X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
+                                               get_casa(X2,Y2,P,Tab),
+                                               P=:=1,
+                                               vizinho(X2,Y2,D,X3,Y3),
+                                               get_casa(X3,Y3,P2,Tab),
+                                               P2=:=0,
+                                               na_linha_come_nosferatu_aux(X3,Y3,Xf,Yf,D,Tab).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -289,6 +305,10 @@ movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
 % movimento come peça simples
 movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
                                   na_linha_come_simples(X,Y,Xf,Yf,Tab).
+% movimento come do nosferatu
+movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
+                                  get_casa(X,Y,P,Tab), P=:=3,
+                                  na_linha_come_nosferatu(X,Y,Xf,Yf,Tab).
 
 
 % movimento simples de uma casa
@@ -305,6 +325,33 @@ exec_move(X,Y,Xf,Yf,Tab,TabN):- not(e_vizinho(X,Y,Xf,Yf)),
                                 muda_tab(0,X2,Y2,Tab,Ntab),
                                 muda_tab(0,X,Y,Ntab,NTab2),
                                 muda_tab(P,Xf,Yf,NTab2,TabN).
+                                
+exec_move(X,Y,Xf,Yf,Tab,TabN):- na_linha_come_nosferatu(X,Y,Xf,Yf,Tab),
+                                repeat,
+                                (write('Que pretende fazer com a(s) peça(s) que capturou?\n'),
+                                write('1-Comer\n2-Transformar em vampiro\n\nOpcao: '),
+                                read(O)), (O=:=1; O=:=2),
+                                direccao(X,Y,Xf,Yf,D), write('vai chamar limpa_linha\n'),
+                                limpa_linha(O,X,Y,Xf,Yf,D,Tab,Ntab),
+                                muda_tab(0,X,Y,Ntab,Ntab2),
+                                muda_tab(3,Xf,Yf,Ntab2,TabN).
+
+limpa_linha(_,X,Y,X,Y,_,Tab,Ntab):- copia_tab(Tab,Ntab).
+limpa_linha(1,X,Y,Xf,Yf,D,Tab,Ntab):- vizinho(X,Y,D,X2,Y2),
+                                      get_casa(X2,Y2,P,Tab),
+                                      P=:=1,
+                                      muda_tab(0,X2,Y2,Tab,Ntab2),
+                                      limpa_linha(1,X2,Y2,Xf,Yf,D,Ntab2,Ntab).
+limpa_linha(2,X,Y,Xf,Yf,D,Tab,Ntab):- vizinho(X,Y,D,X2,Y2),
+                                      get_casa(X2,Y2,P,Tab),
+                                      P=:=1,
+                                      muda_tab(2,X2,Y2,Tab,Ntab2),
+                                      limpa_linha(2,X2,Y2,Xf,Yf,D,Ntab2,Ntab).
+limpa_linha(O,X,Y,Xf,Yf,D,Tab,Ntab):- vizinho(X,Y,D,X2,Y2),
+                                      get_casa(X2,Y2,P,Tab),
+                                      P=:=0,
+                                      muda_tab(0,X2,Y2,Tab,Ntab2),
+                                      limpa_linha(O,X2,Y2,Xf,Yf,D,Ntab2,Ntab).
 
 
 ganhou(_,[]):-!.

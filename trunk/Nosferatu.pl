@@ -121,6 +121,10 @@ muda_linha(N,Pnov,X,[El|Resto],[El|Resto2]):-
         N\=X, N2 is N+1,
         muda_linha(N2,Pnov,X,Resto,Resto2).
 
+% copia_tab(Tab,Ntab)
+copia_tab([],[]).
+copia_tab([Lin|Resto],[Lin|Nresto]):- copia_tab(Resto,Nresto).
+
 
 
 %%%%%%%%%%%%%%%%%%% INSERIR PEÇAS NO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -205,7 +209,7 @@ escreve_vez(1):- write('Vez dos aldeoes\n').
 escreve_vez(2):- write('Vez dos vampiros\n').
 
 % para ver se as duas posicoes estao na mesma linha
-na_linha_livre(X,Y,Xf,Yf,Tab):- direccao(X,Y,Xf,Yf,D), write(D),nl,
+na_linha_livre(X,Y,Xf,Yf,Tab):- direccao(X,Y,Xf,Yf,D),
                                 na_linha_livre_aux(X,Y,Xf,Yf,D,Tab).
 
 na_linha_livre_aux(X,Y,X,Y,_,_).
@@ -213,6 +217,21 @@ na_linha_livre_aux(X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
                                       get_casa(X2,Y2,P,Tab),
                                       P=:=0,
                                       na_linha_livre_aux(X2,Y2,Xf,Yf,D,Tab).
+                                      
+na_linha_come_simples(X,Y,Xf,Yf,Tab):- direccao(X,Y,Xf,Yf,D),
+                                       get_casa(X,Y,P,Tab),
+                                       na_linha_come_simples_aux(P,X,Y,Xf,Yf,D,Tab).
+na_linha_come_simples_aux(1,X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
+                                               get_casa(X2,Y2,P,Tab),
+                                               (P=:=3; P=:=2),
+                                               vizinho(X2,Y2,D,X3,Y3),
+                                               X3=:=Xf, Y3=:=Yf.
+na_linha_come_simples_aux(Peca,X,Y,Xf,Yf,D,Tab):- (Peca=:=3; Peca=:=2),
+                                                  vizinho(X,Y,D,X2,Y2),
+                                                  get_casa(X2,Y2,P,Tab),
+                                                  P=:=1,
+                                                  vizinho(X2,Y2,D,X3,Y3),
+                                                  X3=:=Xf, Y3=:=Yf.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -228,8 +247,8 @@ joga(J,humano,[],[],Tab):- mostra_tabuleiro(Tab),
                            repeat, (write('Escolha a peca que pretende mover\n'),
                            pede_casa(X,Y)), pertence(J,X,Y,Tab),
                            repeat, (write('Escolha a casa para onde pertende mover\n'),
-                           pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab),
-                           exec_move(X,Y,Xf,Yf,Tab,TabN),
+                           pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab,Ntab),
+                           exec_move(X,Y,Xf,Yf,Ntab,TabN),
                            troca(J,J2),
                            joga(J2,humano,[],[],TabN).
 
@@ -239,8 +258,8 @@ joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
                           repeat, (write('Escolha a peca que pretende mover\n'),
                           pede_casa(X,Y)), pertence(2,X,Y,Tab),
                           repeat, (write('Escolha a casa para onde pertende mover\n'), pede_casa(Xf,Yf)),
-                          movimento_valido(X,Y,Xf,Yf,Tab),
-                          exec_move(X,Y,Xf,Yf,Tab,TabN),
+                          movimento_valido(X,Y,Xf,Yf,Tab,Ntab),
+                          exec_move(X,Y,Xf,Yf,Ntab,TabN),
                           joga(1,humano,P_al,[],TabN).
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
                                      escreve_vez(1),
@@ -261,15 +280,18 @@ joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % apenas movimentos simples
-movimento_valido(X,Y,Xf,Yf,Tab):- e_vizinho(X,Y,Xf,Yf),
-                                  casa_livre(Xf,Yf,Tab).
+movimento_valido(X,Y,Xf,Yf,Tab,Ntab):- casa_livre(Xf,Yf,Tab),
+                                       e_vizinho(X,Y,Xf,Yf),
+                                       copia_tab(Tab,Ntab).
 % movimentos simples do nosferatu
-movimento_valido(X,Y,Xf,Yf,Tab):- get_casa(X,Y,P,Tab), P=:=3,
-                                  na_linha_livre(X,Y,Xf,Yf,Tab),
-                                  casa_livre(Xf,Yf,Tab).
-
-
-
+movimento_valido(X,Y,Xf,Yf,Tab,Ntab):- casa_livre(Xf,Yf,Tab),
+                                       get_casa(X,Y,P,Tab), P=:=3,
+                                       na_linha_livre(X,Y,Xf,Yf,Tab),
+                                       copia_tab(Tab,Ntab).
+% movimento come peça simples
+movimento_valido(X,Y,Xf,Yf,Tab,Ntab):- casa_livre(Xf,Yf,Tab),
+                                       na_linha_come_simples(X,Y,Xf,Yf,Tab),
+                                       exec_come_simples(X,Y,Xf,Yf,Tab,Ntab).
 
 /*movimento_valido(J, n-simp-(X,Y)-(Xf,Yf), Tab):-
         nao_obrigatorio(J,_,Tab),
@@ -279,6 +301,10 @@ movimento_valido(X,Y,Xf,Yf,Tab):- get_casa(X,Y,P,Tab), P=:=3,
         
 exec_move(X,Y,Xf,Yf,Tab,TabN):- get_casa(X,Y,P,Tab), muda_tab(0,X,Y,Tab,NTab),
                            muda_tab(P,Xf,Yf,NTab,TabN).
+                           
+exec_come_simples(X,Y,Xf,Yf,Tab,TabN):- direccao(X,Y,Xf,Yf,D),
+                                        vizinho(X,Y,D,X2,Y2),
+                                        muda_tab(0,X2,Y2,Tab,TabN).
 
 
 ganhou(_,[]):-!.

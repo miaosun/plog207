@@ -166,8 +166,8 @@ naoTemInimigos(Peca,[H|T]):- (Peca=:=2; Peca=:=3), H=\=1,
                                 naoTemInimigos(Peca,T).
                                 
 casa_valida(X,Y,Peca,Tab):- conteudo_casa(X,Y,P2,Tab), P2=:=0,
-                            get_vizinhos(X,Y,Tab,V),
-                            naoTemInimigos(Peca,V).
+                            get_vizinhos(X,Y,Tab,LV),
+                            naoTemInimigos(Peca,LV).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% JOGAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

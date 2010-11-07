@@ -28,8 +28,8 @@ pecas_v([2,2,2,2,2,3]).
 
 %%% Inicio do programa
 start:- welcome,
-        estadoInicial_t(Tab),
-        pecas_al_t(P_al), pecas_v_t(P_v),
+        estadoInicial_t2(Tab),
+        pecas_al_t2(P_al), pecas_v_t2(P_v),
         joga(1,humano,P_al,P_v,Tab).
 
 %% Welcome %%
@@ -134,10 +134,10 @@ insere_peca(P,Tab,TabN):- repeat,
 % 1 - Sudeste
 % 2 - Sudoeste
 % 3 - Noroeste
-direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi<Yf, Dir is 0. %Nordeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi>Yf, Dir is 0. %Nordeste
 direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi<Yf, Dir is 1. %Sudeste
-direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 2. %Sudoeste
-direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi>Yf, Dir is 3. %Noroeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi<Yf, Dir is 2. %Sudoeste
+direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 3. %Noroeste
 
 % vizinho(X,Y,Dir,Xf,Yf)
 vizinho(X,Y,0,Xf,Yf):- (Y=:=0; X=:=6), Xf is 0, Yf is 0.
@@ -195,9 +195,25 @@ oposto(Dir, Dir2):- (Dir=:=3; Dir=:=4), Dir2 is Dir-2.
 
 casa_valida(X,Y,Peca,Tab):- get_casa(X,Y,P2,Tab), P2=:=0,
                             esta_seguro(X,Y,Peca,Tab).
+                            
 casa_livre(X,Y,Tab):- get_casa(X,Y,P,Tab), P=:=0.
+
 pertence(1,X,Y,Tab):- get_casa(X,Y,P,Tab), P=:=1.
 pertence(2,X,Y,Tab):- get_casa(X,Y,P,Tab), (P=:=2; P=:=3).
+
+escreve_vez(1):- write('Vez dos aldeoes\n').
+escreve_vez(2):- write('Vez dos vampiros\n').
+
+% para ver se as duas posicoes estao na mesma linha
+na_linha_livre(X,Y,Xf,Yf,Tab):- direccao(X,Y,Xf,Yf,D), write(D),nl,
+                                na_linha_livre_aux(X,Y,Xf,Yf,D,Tab).
+
+na_linha_livre_aux(X,Y,X,Y,_,_).
+na_linha_livre_aux(X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
+                                      get_casa(X2,Y2,P,Tab),
+                                      P=:=0,
+                                      na_linha_livre_aux(X2,Y2,Xf,Yf,D,Tab).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% JOGAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -206,29 +222,38 @@ pertence(2,X,Y,Tab):- get_casa(X,Y,P,Tab), (P=:=2; P=:=3).
 troca(1,2).
 troca(2,1).
 
-%% para quando ja estamos a jogar
-joga(_,_,[],[],_).
+%% para quando todos jogam
+joga(J,humano,[],[],Tab):- mostra_tabuleiro(Tab),
+                           escreve_vez(J),
+                           repeat, (write('Escolha a peca que pretende mover\n'),
+                           pede_casa(X,Y)), pertence(J,X,Y,Tab),
+                           repeat, (write('Escolha a casa para onde pertende mover\n'),
+                           pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab),
+                           exec_move(X,Y,Xf,Yf,Tab,TabN),
+                           troca(J,J2),
+                           joga(J2,humano,[],[],TabN).
+
 %% para quando os vampiros jogam e os aldeoes inserem pecas
 joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
-                             write('Vez dos vampiros\n'),
+                             escreve_vez(2),
                           repeat, (write('Escolha a peca que pretende mover\n'),
                           pede_casa(X,Y)), pertence(2,X,Y,Tab),
                           repeat, (write('Escolha a casa para onde pertende mover\n'), pede_casa(Xf,Yf)),
-                          movimento_valido(2,X,Y,Xf,Yf,Tab),
+                          movimento_valido(X,Y,Xf,Yf,Tab),
                           exec_move(X,Y,Xf,Yf,Tab,TabN),
                           joga(1,humano,P_al,[],TabN).
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
-                                     write('Vez dos aldeoes\n'),
+                                     escreve_vez(1),
                                      insere_peca(Peca,Tab,TabN),
                                      joga(2,humano,Resto,[],TabN).
 
 %% para quando todos inserem pecas
 joga(1,humano,[Peca|Resto],L_v,Tab):- mostra_tabuleiro(Tab),
-                                      write('Vez dos aldeoes\n'),
+                                      escreve_vez(1),
                                       insere_peca(Peca,Tab,TabN),
                                       joga(2,humano,Resto,L_v,TabN).
 joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
-                                       write('Vez dos vampiros\n'),
+                                       escreve_vez(2),
                                        insere_peca(Peca,Tab,TabN),
                                        joga(1,humano,P_al,Resto,TabN).
 
@@ -236,10 +261,16 @@ joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % apenas movimentos simples
-movimento_valido(J,X,Y,Xf,Yf,Tab):-
-        pertence(J,X,Y,Tab),
-        e_vizinho(X,Y,Xf,Yf),
-        casa_livre(Xf,Yf,Tab).
+movimento_valido(X,Y,Xf,Yf,Tab):- e_vizinho(X,Y,Xf,Yf),
+                                  casa_livre(Xf,Yf,Tab).
+% movimentos simples do nosferatu
+movimento_valido(X,Y,Xf,Yf,Tab):- get_casa(X,Y,P,Tab), P=:=3,
+                                  na_linha_livre(X,Y,Xf,Yf,Tab),
+                                  casa_livre(Xf,Yf,Tab).
+
+
+
+
 /*movimento_valido(J, n-simp-(X,Y)-(Xf,Yf), Tab):-
         nao_obrigatorio(J,_,Tab),
         dama(J,X,Y,Tab),
@@ -249,20 +280,6 @@ movimento_valido(J,X,Y,Xf,Yf,Tab):-
 exec_move(X,Y,Xf,Yf,Tab,TabN):- get_casa(X,Y,P,Tab), muda_tab(0,X,Y,Tab,NTab),
                            muda_tab(P,Xf,Yf,NTab,TabN).
 
-
-verifica_peca(Coluna,Linha,Peca,Tab):- get_casa(Coluna,Linha,Valor,Tab),
-                                       Valor>0, Valor<4, Peca is Valor.
-
-verifica_jogada(Xi,Yi,Xf,Yf,Tab):- verifica_peca(Xi,Yi,Peca,Tab),
-                                   get_casa(Xf,Yf,Valor,Tab), Valor=:=0,
-                                   verifica_linha(Xi,Yi,Xf,Yf,Peca,Tab).
-
-
-
-verifca_ganha(Jogador, Tab):-write('ganhou algum jogador? '),
-                             ganhou(Jogador,Tab),
-                             write('ganhou o jagador: '),
-                             Jogador.
 
 ganhou(_,[]):-!.
 ganhou(1,[H|R]):-ganhou_aux(1,H), ganhou(1,R).
@@ -345,3 +362,15 @@ estadoInicial_t([ [9,9,1,0,0,9,9],
 
 pecas_al_t([1,1,1,1,1,1]).
 pecas_v_t([]).
+
+estadoInicial_t2([ [9,9,1,1,1,9,9],
+                   [9,1,1,0,0,2,9],
+                   [1,1,0,0,1,2,2],
+                   [1,0,0,1,0,0,2],
+                   [1,0,0,0,0,0,2],
+                   [9,1,0,0,0,3,9],
+                   [9,9,0,0,0,9,9]
+                 ]).
+
+pecas_al_t2([]).
+pecas_v_t2([]).

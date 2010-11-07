@@ -95,8 +95,8 @@ minuscula(Let):- Let>=97, Let=<104.
 numero(Let):- Let>=48, Let=<56.
 
 % posicao(X,Y,Valor,Tab) verifica o valor da casa X,Y
-conteudo_casa(X,0,Valor,[H|_]):- conteudo_casa_linha(X,Valor,H).
-conteudo_casa(X,Y,Valor,[_|T]):- Y>0, Y2 is Y-1, conteudo_casa(X,Y2,Valor,T).
+get_casa(X,0,Valor,[H|_]):- conteudo_casa_linha(X,Valor,H).
+get_casa(X,Y,Valor,[_|T]):- Y>0, Y2 is Y-1, get_casa(X,Y2,Valor,T).
 
 conteudo_casa_linha(0,Valor,[H|_]):- Valor is H.
 conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1,
@@ -154,20 +154,44 @@ vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1.  %Noroeste
 get_vizinhos(X,Y,Tab,LV):- get_vizinhos_aux(X,Y,Tab,LV,0), !.
 get_vizinhos_aux(_,_,_,[],4).
 get_vizinhos_aux(X,Y,Tab,[V|Resto],Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
-                               conteudo_casa(X2,Y2,V,Tab),
+                               get_casa(X2,Y2,V,Tab),
                                Dir2 is Dir+1,
                                get_vizinhos_aux(X,Y,Tab,Resto,Dir2).
 
 % verifica se nao existe nenhum vizinho inimigo
 naoTemInimigos(_,[]).
-naoTemInimigos(Peca,[H|T]):- Peca=:=1, (H=:=0; H=:=9),
+naoTemInimigos(Peca,[H|T]):- Peca=:=1, H=\=2; H=\=3,
                                 naoTemInimigos(Peca,T).
 naoTemInimigos(Peca,[H|T]):- (Peca=:=2; Peca=:=3), H=\=1,
                                 naoTemInimigos(Peca,T).
+
+esta_seguro(X,Y,Peca,Tab):- esta_seguro_aux(X,Y,Peca,Tab,0).
+esta_seguro_aux(_,_,_,_,4).
+esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               get_casa(X2,Y2,V,Tab), V=\=2, V=\=3,
+                               Dir2 is Dir+1,
+                               get_vizinhos_aux(X,Y,1,Tab,Dir2).
+esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               get_casa(X2,Y2,V,Tab), (V=:=3; V=:=2), oposto(Dir, Dir3),
+                               vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
+                               P=\=0, Dir2 is Dir+1,
+                               esta_seguro_aux(X,Y,1,Tab,Dir2).
+esta_seguro_aux(X,Y,_,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               get_casa(X2,Y2,V,Tab), V=\=1,
+                               Dir2 is Dir+1,
+                               get_vizinhos_aux(X,Y,1,Tab,Dir2).
+esta_seguro_aux(X,Y,_,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               get_casa(X2,Y2,V,Tab), V=:=1, oposto(Dir, Dir3),
+                               vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
+                               P=\=0, Dir2 is Dir+1,
+                               esta_seguro_aux(X,Y,1,Tab,Dir2).
+                               
+oposto(Dir, Dir2):- (Dir=:=1; Dir=:=2), Dir2 is Dir+2.
+oposto(Dir, Dir2):- (Dir=:=3; Dir=:=4), Dir2 is Dir-2.
+
                                 
-casa_valida(X,Y,Peca,Tab):- conteudo_casa(X,Y,P2,Tab), P2=:=0,
-                            get_vizinhos(X,Y,Tab,LV),
-                            naoTemInimigos(Peca,LV).
+casa_valida(X,Y,Peca,Tab):- get_casa(X,Y,P2,Tab), P2=:=0,
+                            esta_seguro(X,Y,Peca,Tab).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% JOGAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -192,11 +216,11 @@ joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
 
 
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-verifica_peca(Coluna,Linha,Peca,Tab):- conteudo_casa(Coluna,Linha,Valor,Tab),
+verifica_peca(Coluna,Linha,Peca,Tab):- get_casa(Coluna,Linha,Valor,Tab),
                                        Valor>0, Valor<4, Peca is Valor.
 
 verifica_jogada(Xi,Yi,Xf,Yf,Tab):- verifica_peca(Xi,Yi,Peca,Tab),
-                                   conteudo_casa(Xf,Yf,Valor,Tab), Valor=:=0,
+                                   get_casa(Xf,Yf,Valor,Tab), Valor=:=0,
                                    verifica_linha(Xi,Yi,Xf,Yf,Peca,Tab).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

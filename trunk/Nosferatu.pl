@@ -30,11 +30,8 @@ pecas_v([2,2,2,2,2,3]).
 start:- welcome,
         %menu_start,
         estadoInicial(Tab),
-        mostra_tabuleiro(Tab),
-        pede_casa(X,Y),
-        %conteudo_casa(X,Y,V,Tab),
-        insere_peca(X,Y,3,Tab,Tab2),
-        mostra_tabuleiro(Tab2).
+        pecas_al(P_al), pecas_v(P_v),
+        joga(1,humano,P_al,P_v,Tab).
 
 %% Welcome %%
 welcome:-
@@ -50,22 +47,24 @@ menu_start:-
        write('*     Escolhe o mode do jogo:    *'),nl,
        write('*                                *'),nl,
        write('*       1.Humano VS Humano       *'),nl,
-       write('*     2.Humano VS Computador     *'),nl,
-       write('*   3.Computador VS Computador   *'),nl,
+       write('*     2.Computador VS Humano     *'),nl,
+       write('*     3.Humano VS Computador     *'),nl,
+       write('*   4.Computador VS Computador   *'),nl,
        write('*                                *'),nl,
        write('**********************************'),nl,nl,
-       write('faca a sua escolha'),nl,repeat, get_code(Op), Op>=49, Op=<51,
+       write('faca a sua escolha'),nl,repeat, get_code(Op), conv(Op,O),
        menu_lvl,
-       write('faca a sua escolha'),nl,repeat, get_code(Op), Op>=49, Op=<51,
-       tipo_jogo(Op, Pl1, Pl2),
+       write('faca a sua escolha'),nl,repeat, get_code(Op), conv(Op,O),
+       tipo_jogo(O, Pl1, Pl2),
        assert(jogador(1, Pl1)),
        assert(jogador(2, Pl2)).
 
 %% define o tipo de jogo
 %% tipo_jogo(Op, Pl1, Pl2)
-tipo_jogo(49, humano, humano).
-tipo_jogo(50, humano, computador).
-tipo_jogo(51, computador, computador).
+tipo_jogo(1, humano, humano).
+tipo_jogo(2, computador, humano).
+tipo_jogo(3, humano, computador).
+tipo_jogo(4, computador, computador).
 
 menu_lvl:-
        write('**********************************'),nl,
@@ -102,16 +101,10 @@ conteudo_casa(X,Y,Valor,[_|T]):- Y>0, Y2 is Y-1, conteudo_casa(X,Y2,Valor,T).
 conteudo_casa_linha(0,Valor,[H|_]):- Valor is H.
 conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1,
                                      conteudo_casa_linha(X2,Valor,T).
-%%%%%%%%%%%%%%%%%%% INSERIR PEÇAS NO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-insere_peca(X,Y,P,Tab,TabN):- casa_valida(X,Y,P,Tab),
-                              muda_tab(P,X,Y,Tab,TabN).
-                              
+                                     
 muda_tab(Pnov,X,Y,Tab,NovoTab):-
         muda_tab2(0,Pnov,X,Y,Tab,NovoTab),!.
-        
+
 muda_tab2(_,_,_,_,[],[]).
 muda_tab2(Y,Pnov,X,Y,[Lin|Resto],[NovLin|Resto2]):-
         muda_linha(0,Pnov,X,Lin,NovLin),
@@ -129,6 +122,13 @@ muda_linha(N,Pnov,X,[El|Resto],[El|Resto2]):-
         N\=X, N2 is N+1,
         muda_linha(N2,Pnov,X,Resto,Resto2).
 
+
+
+%%%%%%%%%%%%%%%%%%% INSERIR PEÇAS NO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+insere_peca(X,Y,P,Tab,TabN):- casa_valida(X,Y,P,Tab),
+                              muda_tab(P,X,Y,Tab,TabN).
+%insere_peca(_,_,_,_,_):- fail.
+                              
 % 0 - Nordeste
 % 1 - Sudeste
 % 2 - Sudoeste
@@ -139,33 +139,56 @@ direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 2. %Sudoeste
 direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi>Yf, Dir is 3. %Noroeste
 
 % vizinho(X,Y,Dir,Xf,Yf)
-vizinho(X,Y,0,Xf,Yf):- Xf is X+1, Yf is Y-1.
-vizinho(X,Y,1,Xf,Yf):- Xf is X+1, Yf is Y+1.
-vizinho(X,Y,2,Xf,Yf):- Xf is X-1, Yf is Y+1.
-vizinho(X,Y,3,Xf,Yf):- Xf is X-1, Yf is Y-1.
+vizinho(X,Y,0,Xf,Yf):- Y=:=0; X=:=6, Xf is 0, Yf is 0.
+vizinho(X,Y,0,Xf,Yf):- Y=\=0, X=\=6, Xf is X+1, Yf is Y-1.  %Nordeste
+vizinho(X,Y,1,Xf,Yf):- Y=:=6; X=:=6, Xf is 0, Yf is 0.
+vizinho(X,Y,1,Xf,Yf):- Y=\=6, X=\=6, Xf is X+1, Yf is Y+1.  %Sudeste
+vizinho(X,Y,2,Xf,Yf):- Y=:=6; X=:=0, Xf is 0, Yf is 0.
+vizinho(X,Y,2,Xf,Yf):- Y=\=6, X=\=0, Xf is X-1, Yf is Y+1.  %Sudoeste
+vizinho(X,Y,3,Xf,Yf):- Y=:=0; X=:=0, Xf is 0, Yf is 0.
+vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1.  %Noroeste
 
 % get_vizinhos(X,Y,Tab,LV,Dir) devolve em LV uma lista dos valores dos vizinhos
 % Dir deve ser passado com 0
-get_vizinhos(_,_,_,LV,4):- write(LV),nl.
-get_vizinhos(X,Y,Tab,_,0):- vizinho(X,Y,Dir,X2,Y2),write('get vizinho'),nl, write(X2), write(' '), write(Y2),nl,
+
+get_vizinhos(X,Y,Tab,LV):- get_vizinhos_aux(X,Y,Tab,LV,0), !.
+get_vizinhos_aux(_,_,_,[],4).
+get_vizinhos_aux(X,Y,Tab,[V|Resto],Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                conteudo_casa(X2,Y2,V,Tab),
                                Dir2 is Dir+1,
-                               get_vizinhos(X,Y,Tab,[V],Dir2).
-get_vizinhos(X,Y,Tab,LV,Dir):- Dir=\=0, Dir<4, vizinho(X,Y,Dir,X2,Y2),write('get vizinho'),nl, write(X2), write(' '), write(Y2),nl,
-                               conteudo_casa(X2,Y2,V,Tab),
-                               Dir2 is Dir+1,
-                               get_vizinhos(X,Y,Tab,[V|LV],Dir2).
+                               get_vizinhos_aux(X,Y,Tab,Resto,Dir2).
 
 % verifica se nao existe nenhum vizinho inimigo
 naoTemInimigos(_,[]).
-naoTemInimigos(Peca,[H|T]):- Peca=:=1, H=:=0, H=:=9,
+naoTemInimigos(Peca,[H|T]):- Peca=:=1, (H=:=0; H=:=9),
                                 naoTemInimigos(Peca,T).
-naoTemInimigos(Peca,[H|T]):- Peca=:=2; Peca=:=3, H=\=1,
+naoTemInimigos(Peca,[H|T]):- (Peca=:=2; Peca=:=3), H=\=1,
                                 naoTemInimigos(Peca,T).
                                 
 casa_valida(X,Y,Peca,Tab):- conteudo_casa(X,Y,P2,Tab), P2=:=0,
-                            get_vizinhos(X,Y,Tab,LV,0),
-                            naoTemInimigos(Peca,LV).
+                            get_vizinhos(X,Y,Tab,V),
+                            naoTemInimigos(Peca,V).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% JOGAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+troca(1,2).
+troca(2,1).
+
+%% para quando ja estamos a jogar
+joga(_,_,[],[],_).
+%% para quando os vampiros jogam e os aldeoes inserem pecas
+joga(_,_,_,[],_).
+%% para quando todos inserem pecas
+joga(1,humano,[Peca|Resto],L_v,Tab):- mostra_tabuleiro(Tab),
+                                      repeat, pede_casa(X,Y),
+                                      insere_peca(X,Y,Peca,Tab,TabN),
+                                      joga(2,humano,Resto,L_v,TabN).
+joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
+                                       repeat, pede_casa(X,Y),
+                                       insere_peca(X,Y,Peca,Tab,TabN),
+                                       joga(1,humano,P_al,Resto,TabN).
 
 
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

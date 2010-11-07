@@ -247,8 +247,8 @@ joga(J,humano,[],[],Tab):- mostra_tabuleiro(Tab),
                            repeat, (write('Escolha a peca que pretende mover\n'),
                            pede_casa(X,Y)), pertence(J,X,Y,Tab),
                            repeat, (write('Escolha a casa para onde pertende mover\n'),
-                           pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab,Ntab),
-                           exec_move(X,Y,Xf,Yf,Ntab,TabN),
+                           pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab),
+                           exec_move(X,Y,Xf,Yf,Tab,TabN),
                            troca(J,J2),
                            joga(J2,humano,[],[],TabN).
 
@@ -258,8 +258,8 @@ joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
                           repeat, (write('Escolha a peca que pretende mover\n'),
                           pede_casa(X,Y)), pertence(2,X,Y,Tab),
                           repeat, (write('Escolha a casa para onde pertende mover\n'), pede_casa(Xf,Yf)),
-                          movimento_valido(X,Y,Xf,Yf,Tab,Ntab),
-                          exec_move(X,Y,Xf,Yf,Ntab,TabN),
+                          movimento_valido(X,Y,Xf,Yf,Tab),
+                          exec_move(X,Y,Xf,Yf,Tab,TabN),
                           joga(1,humano,P_al,[],TabN).
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
                                      escreve_vez(1),
@@ -280,31 +280,31 @@ joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % apenas movimentos simples
-movimento_valido(X,Y,Xf,Yf,Tab,Ntab):- casa_livre(Xf,Yf,Tab),
-                                       e_vizinho(X,Y,Xf,Yf),
-                                       copia_tab(Tab,Ntab).
+movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
+                                  e_vizinho(X,Y,Xf,Yf).
 % movimentos simples do nosferatu
-movimento_valido(X,Y,Xf,Yf,Tab,Ntab):- casa_livre(Xf,Yf,Tab),
-                                       get_casa(X,Y,P,Tab), P=:=3,
-                                       na_linha_livre(X,Y,Xf,Yf,Tab),
-                                       copia_tab(Tab,Ntab).
+movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
+                                  get_casa(X,Y,P,Tab), P=:=3,
+                                  na_linha_livre(X,Y,Xf,Yf,Tab).
 % movimento come peça simples
-movimento_valido(X,Y,Xf,Yf,Tab,Ntab):- casa_livre(Xf,Yf,Tab),
-                                       na_linha_come_simples(X,Y,Xf,Yf,Tab),
-                                       exec_come_simples(X,Y,Xf,Yf,Tab,Ntab).
+movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
+                                  na_linha_come_simples(X,Y,Xf,Yf,Tab).
 
-/*movimento_valido(J, n-simp-(X,Y)-(Xf,Yf), Tab):-
-        nao_obrigatorio(J,_,Tab),
-        dama(J,X,Y,Tab),
-        directo(X,Y,Xf,Yf,_,Tab),
-        livre(Xf,Yf,Tab). */
-        
-exec_move(X,Y,Xf,Yf,Tab,TabN):- get_casa(X,Y,P,Tab), muda_tab(0,X,Y,Tab,NTab),
-                           muda_tab(P,Xf,Yf,NTab,TabN).
-                           
-exec_come_simples(X,Y,Xf,Yf,Tab,TabN):- direccao(X,Y,Xf,Yf,D),
-                                        vizinho(X,Y,D,X2,Y2),
-                                        muda_tab(0,X2,Y2,Tab,TabN).
+
+% movimento simples de uma casa
+exec_move(X,Y,Xf,Yf,Tab,TabN):- e_vizinho(X,Y,Xf,Yf),
+                                get_casa(X,Y,P,Tab),
+                                muda_tab(0,X,Y,Tab,NTab),
+                                muda_tab(P,Xf,Yf,NTab,TabN).
+% movimento simples com come
+exec_move(X,Y,Xf,Yf,Tab,TabN):- not(e_vizinho(X,Y,Xf,Yf)),
+                                get_casa(X,Y,P,Tab),
+                                P=\=3,
+                                direccao(X,Y,Xf,Yf,D),
+                                vizinho(X,Y,D,X2,Y2),
+                                muda_tab(0,X2,Y2,Tab,Ntab),
+                                muda_tab(0,X,Y,Ntab,NTab2),
+                                muda_tab(P,Xf,Yf,NTab2,TabN).
 
 
 ganhou(_,[]):-!.

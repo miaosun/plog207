@@ -139,18 +139,18 @@ direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 2. %Sudoeste
 direccao(Xi,Yi,Xf,Yf,Dir):- Xi<Xf, Yi>Yf, Dir is 3. %Noroeste
 
 % vizinho(X,Y,Dir,Xf,Yf)
-vizinho(X,Y,0,Xf,Yf):- Y=:=0; X=:=6, Xf is 0, Yf is 0.
+vizinho(X,Y,0,Xf,Yf):- (Y=:=0; X=:=6), Xf is 0, Yf is 0.
 vizinho(X,Y,0,Xf,Yf):- Y=\=0, X=\=6, Xf is X+1, Yf is Y-1.  %Nordeste
-vizinho(X,Y,1,Xf,Yf):- Y=:=6; X=:=6, Xf is 0, Yf is 0.
+vizinho(X,Y,1,Xf,Yf):- (Y=:=6; X=:=6), Xf is 0, Yf is 0.
 vizinho(X,Y,1,Xf,Yf):- Y=\=6, X=\=6, Xf is X+1, Yf is Y+1.  %Sudeste
-vizinho(X,Y,2,Xf,Yf):- Y=:=6; X=:=0, Xf is 0, Yf is 0.
+vizinho(X,Y,2,Xf,Yf):- (Y=:=6; X=:=0), Xf is 0, Yf is 0.
 vizinho(X,Y,2,Xf,Yf):- Y=\=6, X=\=0, Xf is X-1, Yf is Y+1.  %Sudoeste
-vizinho(X,Y,3,Xf,Yf):- Y=:=0; X=:=0, Xf is 0, Yf is 0.
+vizinho(X,Y,3,Xf,Yf):- (Y=:=0; X=:=0), Xf is 0, Yf is 0.
 vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1.  %Noroeste
 
+/*
 % get_vizinhos(X,Y,Tab,LV,Dir) devolve em LV uma lista dos valores dos vizinhos
 % Dir deve ser passado com 0
-
 get_vizinhos(X,Y,Tab,LV):- get_vizinhos_aux(X,Y,Tab,LV,0), !.
 get_vizinhos_aux(_,_,_,[],4).
 get_vizinhos_aux(X,Y,Tab,[V|Resto],Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
@@ -164,23 +164,23 @@ naoTemInimigos(Peca,[H|T]):- Peca=:=1, H=\=2; H=\=3,
                                 naoTemInimigos(Peca,T).
 naoTemInimigos(Peca,[H|T]):- (Peca=:=2; Peca=:=3), H=\=1,
                                 naoTemInimigos(Peca,T).
-
+*/
 esta_seguro(X,Y,Peca,Tab):- esta_seguro_aux(X,Y,Peca,Tab,0).
 esta_seguro_aux(_,_,_,_,4).
 esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), V=\=2, V=\=3,
                                Dir2 is Dir+1,
-                               get_vizinhos_aux(X,Y,1,Tab,Dir2).
+                               esta_seguro_aux(X,Y,1,Tab,Dir2).
 esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), (V=:=3; V=:=2), oposto(Dir, Dir3),
                                vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
                                P=\=0, Dir2 is Dir+1,
                                esta_seguro_aux(X,Y,1,Tab,Dir2).
-esta_seguro_aux(X,Y,_,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), V=\=1,
                                Dir2 is Dir+1,
-                               get_vizinhos_aux(X,Y,1,Tab,Dir2).
-esta_seguro_aux(X,Y,_,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               esta_seguro_aux(X,Y,1,Tab,Dir2).
+esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), V=:=1, oposto(Dir, Dir3),
                                vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
                                P=\=0, Dir2 is Dir+1,

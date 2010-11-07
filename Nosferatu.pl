@@ -76,8 +76,8 @@ menu_lvl:-
        write('*            3.Hard              *'),nl,
        write('*                                *'),nl,
        write('**********************************'),nl,nl.
-       
-       
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%% METODOS AUXILIARES AO JOGO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,7 +85,7 @@ menu_lvl:-
 %pede casa
 pede_casa(X,Y):- write('linha '), read(SY), Y is SY-1,
                  write('coluna '), get_code(SX), conv(SX,X).
-                 
+
 conv(Let,Valor):- maiuscula(Let), Valor is Let-65.
 conv(Let,Valor):- minuscula(Let), Valor is Let-97.
 conv(Let,Valor):- numero(Let), Valor is Let-49.
@@ -101,7 +101,7 @@ get_casa(X,Y,Valor,[_|T]):- Y>0, Y2 is Y-1, get_casa(X,Y2,Valor,T).
 conteudo_casa_linha(0,Valor,[H|_]):- Valor is H.
 conteudo_casa_linha(X,Valor,[_|T]):- X>0, X2 is X-1,
                                      conteudo_casa_linha(X2,Valor,T).
-                                     
+
 muda_tab(Pnov,X,Y,Tab,NovoTab):-
         muda_tab2(0,Pnov,X,Y,Tab,NovoTab),!.
 
@@ -128,7 +128,7 @@ muda_linha(N,Pnov,X,[El|Resto],[El|Resto2]):-
 insere_peca(X,Y,P,Tab,TabN):- casa_valida(X,Y,P,Tab),
                               muda_tab(P,X,Y,Tab,TabN).
 %insere_peca(_,_,_,_,_):- fail.
-                              
+
 % 0 - Nordeste
 % 1 - Sudeste
 % 2 - Sudoeste
@@ -185,11 +185,11 @@ esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
                                P=\=0, Dir2 is Dir+1,
                                esta_seguro_aux(X,Y,1,Tab,Dir2).
-                               
+
 oposto(Dir, Dir2):- (Dir=:=1; Dir=:=2), Dir2 is Dir+2.
 oposto(Dir, Dir2):- (Dir=:=3; Dir=:=4), Dir2 is Dir-2.
 
-                                
+
 casa_valida(X,Y,Peca,Tab):- get_casa(X,Y,P2,Tab), P2=:=0,
                             esta_seguro(X,Y,Peca,Tab).
 
@@ -222,6 +222,21 @@ verifica_peca(Coluna,Linha,Peca,Tab):- get_casa(Coluna,Linha,Valor,Tab),
 verifica_jogada(Xi,Yi,Xf,Yf,Tab):- verifica_peca(Xi,Yi,Peca,Tab),
                                    get_casa(Xf,Yf,Valor,Tab), Valor=:=0,
                                    verifica_linha(Xi,Yi,Xf,Yf,Peca,Tab).
+
+
+
+verifca_ganha(Jogador, Tab):-write('ganhou algum jogador? '),
+	                     ganhou(Jogador,Tab),
+			     write('ganhou o jagador: '),
+			     Jogador.
+
+ganhou(_,[]):-!.
+ganhou(1,[H|R]):-ganhou_aux(1,H), ganhou(1,R).
+ganhou_aux(1,[H|T]):-H=\=3, ganhou_aux(1,T).
+Ganhou(2,[H|R]):-ganhou_aux(2,H), ganhou(2,R).
+ganhou_aux(2,[H|T]):-H=\=1, ganhou_aux(2,T).
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%% VISUALIZAÇÃO DO TABULEIRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -280,8 +295,4 @@ escreve(0):-write('   |').   %vazia
 escreve(1):-write(' o |').   %aldeao
 escreve(2):-write(' $ |').   %vampiro
 escreve(3):-write(' N |').   %nosferatu
-
-
-
-
 

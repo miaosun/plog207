@@ -210,19 +210,25 @@ troca(2,1).
 joga(_,_,[],[],_).
 %% para quando os vampiros jogam e os aldeoes inserem pecas
 joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
-                          repeat, pede_casa(X,Y), pede_casa(Xf,Yf),
+                             write('Vez dos vampiros\n'),
+                          repeat, (write('Escolha a peca que pretende mover\n'),
+                          pede_casa(X,Y)), pertence(2,X,Y,Tab),
+                          repeat, (write('Escolha a casa para onde pertende mover\n'), pede_casa(Xf,Yf)),
                           movimento_valido(2,X,Y,Xf,Yf,Tab),
                           exec_move(X,Y,Xf,Yf,Tab,TabN),
                           joga(1,humano,P_al,[],TabN).
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
-                                      insere_peca(Peca,Tab,TabN),
-                                      joga(2,humano,Resto,[],TabN).
+                                     write('Vez dos aldeoes\n'),
+                                     insere_peca(Peca,Tab,TabN),
+                                     joga(2,humano,Resto,[],TabN).
 
 %% para quando todos inserem pecas
 joga(1,humano,[Peca|Resto],L_v,Tab):- mostra_tabuleiro(Tab),
+                                      write('Vez dos aldeoes\n'),
                                       insere_peca(Peca,Tab,TabN),
                                       joga(2,humano,Resto,L_v,TabN).
 joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
+                                       write('Vez dos vampiros\n'),
                                        insere_peca(Peca,Tab,TabN),
                                        joga(1,humano,P_al,Resto,TabN).
 

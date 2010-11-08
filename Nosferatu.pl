@@ -277,6 +277,15 @@ joga(J,humano,[],[],Tab):- mostra_tabuleiro(Tab),
                            troca(J,J2),
                            not(verifica_fim(TabN)), !,
                            joga(J2,humano,[],[],TabN).
+joga(J,computador,[],[],Tab):- mostra_tabuleiro(Tab),
+                           escreve_vez(J),
+                           lista_jogadas(J,Tab,Lista),
+                           escolhe_jogada(Lista,X,Y,Xf,Yf),
+                           exec_move(X,Y,Xf,Yf,Tab,TabN),
+                           troca(J,J2),
+                           jogador(J2,TipoJ),
+                           not(verifica_fim(TabN)), !,
+                           joga(J2,TipoJ,[],[],TabN).
 
 %% para quando os vampiros jogam e os aldeoes inserem pecas
 joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
@@ -285,7 +294,16 @@ joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
                           escolhe_move(X,Y,Xf,Yf,Tab),
                           exec_move(X,Y,Xf,Yf,Tab,TabN),
                           not(verifica_fim(TabN)), !,
-                          joga(1,humano,P_al,[],TabN).
+                          jogador(1,TipoJ),
+                          joga(1,TipoJ,P_al,[],TabN).
+joga(2,computador,P_al,[],Tab):- mostra_tabuleiro(Tab),
+                             escreve_vez(2),
+                          lista_jogadas(2,Tab,Lista),
+                          escolhe_jogada(Lista,X,Y,Xf,Yf),
+                          exec_move(X,Y,Xf,Yf,Tab,TabN),
+                          not(verifica_fim(TabN)), !,
+                          jogador(1,TipoJ),
+                          joga(1,TipoJ,P_al,[],TabN).
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
                                      escreve_vez(1),
                                      insere_peca(Peca,Tab,TabN),

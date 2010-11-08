@@ -168,13 +168,13 @@ direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 3. %Noroeste
 
 % vizinho(X,Y,Dir,Xf,Yf)
 vizinho(X,Y,0,Xf,Yf):- (Y=:=0; X=:=6), Xf is 0, Yf is 0.
-vizinho(X,Y,0,Xf,Yf):- Y=\=0, X=\=6, Xf is X+1, Yf is Y-1, !.  %Nordeste
+vizinho(X,Y,0,Xf,Yf):- Y=\=0, X=\=6, Xf is X+1, Yf is Y-1.  %Nordeste
 vizinho(X,Y,1,Xf,Yf):- (Y=:=6; X=:=6), Xf is 0, Yf is 0.
-vizinho(X,Y,1,Xf,Yf):- Y=\=6, X=\=6, Xf is X+1, Yf is Y+1, !.  %Sudeste
+vizinho(X,Y,1,Xf,Yf):- Y=\=6, X=\=6, Xf is X+1, Yf is Y+1.  %Sudeste
 vizinho(X,Y,2,Xf,Yf):- (Y=:=6; X=:=0), Xf is 0, Yf is 0.
-vizinho(X,Y,2,Xf,Yf):- Y=\=6, X=\=0, Xf is X-1, Yf is Y+1, !.  %Sudoeste
+vizinho(X,Y,2,Xf,Yf):- Y=\=6, X=\=0, Xf is X-1, Yf is Y+1.  %Sudoeste
 vizinho(X,Y,3,Xf,Yf):- (Y=:=0; X=:=0), Xf is 0, Yf is 0.
-vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1, !.  %Noroeste
+vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1.  %Noroeste
 
 e_vizinho(X,Y,Xf,Yf):- vizinho(X,Y,D,Xf,Yf).
 

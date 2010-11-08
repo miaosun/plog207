@@ -30,8 +30,13 @@ pecas_v([2,2,2,2,2,3]).
 start(O):- welcome,
         %menu_start,
         load_simples(O,Tab,P_al,P_v),
-        jogador(1,TipoJ),
+        jogador(1,TipoJ), write(TipoJ), nl,
         not(joga(1,TipoJ,P_al,P_v,Tab)).
+        
+load_simples(0,Tab,P_al,P_v):- menu_start,
+                               estadoInicial(Tab),
+                               pecas_al(P_al),
+                               pecas_v(P_v).
 
 load_simples(1,Tab,P_al,P_v):- tipo_jogo(1, Pl1, Pl2),
                              assert(jogador(1, Pl1)),
@@ -79,8 +84,8 @@ menu_start:-
 %% define o tipo de jogo
 %% tipo_jogo(Op, Pl1, Pl2)
 tipo_jogo(1, humano, humano).
-%tipo_jogo(2, computador, humano).
-%tipo_jogo(3, humano, computador).
+tipo_jogo(2, computador, humano).
+tipo_jogo(3, humano, computador).
 %tipo_jogo(4, computador, computador).
 
 menu_lvl:-
@@ -163,39 +168,39 @@ direccao(Xi,Yi,Xf,Yf,Dir):- Xi>Xf, Yi>Yf, Dir is 3. %Noroeste
 
 % vizinho(X,Y,Dir,Xf,Yf)
 vizinho(X,Y,0,Xf,Yf):- (Y=:=0; X=:=6), Xf is 0, Yf is 0.
-vizinho(X,Y,0,Xf,Yf):- Y=\=0, X=\=6, Xf is X+1, Yf is Y-1.  %Nordeste
+vizinho(X,Y,0,Xf,Yf):- Y=\=0, X=\=6, Xf is X+1, Yf is Y-1, !.  %Nordeste
 vizinho(X,Y,1,Xf,Yf):- (Y=:=6; X=:=6), Xf is 0, Yf is 0.
-vizinho(X,Y,1,Xf,Yf):- Y=\=6, X=\=6, Xf is X+1, Yf is Y+1.  %Sudeste
+vizinho(X,Y,1,Xf,Yf):- Y=\=6, X=\=6, Xf is X+1, Yf is Y+1, !.  %Sudeste
 vizinho(X,Y,2,Xf,Yf):- (Y=:=6; X=:=0), Xf is 0, Yf is 0.
-vizinho(X,Y,2,Xf,Yf):- Y=\=6, X=\=0, Xf is X-1, Yf is Y+1.  %Sudoeste
+vizinho(X,Y,2,Xf,Yf):- Y=\=6, X=\=0, Xf is X-1, Yf is Y+1, !.  %Sudoeste
 vizinho(X,Y,3,Xf,Yf):- (Y=:=0; X=:=0), Xf is 0, Yf is 0.
-vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1.  %Noroeste
+vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1, !.  %Noroeste
 
 e_vizinho(X,Y,Xf,Yf):- vizinho(X,Y,D,Xf,Yf).
 
-esta_seguro(X,Y,Peca,Tab):- esta_seguro_aux(X,Y,Peca,Tab,0), !.
+esta_seguro(X,Y,Peca,Tab):- esta_seguro_aux(X,Y,Peca,Tab,0).
 esta_seguro_aux(_,_,_,_,4).
 esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
-                               get_casa(X2,Y2,V,Tab), V=\=2, V=\=3,
+                               get_casa(X2,Y2,V,Tab), V=\=2, V=\=3, !,
                                Dir2 is Dir+1,
                                esta_seguro_aux(X,Y,1,Tab,Dir2).
 esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), (V=:=3; V=:=2), oposto(Dir, Dir3),
-                               vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
-                               P=\=0, Dir2 is Dir+1,
-                               esta_seguro_aux(X,Y,1,Tab,Dir2).
-esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
-                               get_casa(X2,Y2,V,Tab), V=\=1,
+                               vizinho(X,Y,Dir3,Xo,Yo), not(casa_livre(Xo,Yo,Tab)), !,
                                Dir2 is Dir+1,
                                esta_seguro_aux(X,Y,1,Tab,Dir2).
+esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
+                               get_casa(X2,Y2,V,Tab), V=\=1, !,
+                               Dir2 is Dir+1,
+                               esta_seguro_aux(X,Y,P,Tab,Dir2).
 esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), V=:=1, oposto(Dir, Dir3),
-                               vizinho(X,Y,Dir3,Xo,Yo), not(casa_livre(Xo,Yo,Tab)),
+                               vizinho(X,Y,Dir3,Xo,Yo), not(casa_livre(Xo,Yo,Tab)), !,
                                Dir2 is Dir+1,
-                               esta_seguro_aux(X,Y,1,Tab,Dir2).
+                               esta_seguro_aux(X,Y,P,Tab,Dir2).
 
-oposto(Dir, Dir2):- (Dir=:=1; Dir=:=2), Dir2 is Dir+2.
-oposto(Dir, Dir2):- (Dir=:=3; Dir=:=4), Dir2 is Dir-2.
+oposto(Dir, Dir2):- Dir<3, Dir2 is Dir+2.
+oposto(Dir, Dir2):- Dir>2, Dir2 is Dir-2.
 
 
 casa_valida(X,Y,Peca,Tab):- casa_livre(X,Y,Tab),
@@ -324,12 +329,14 @@ joga(2,computador,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
 %%%%%%%%%%%%%%%%%% PARA CALCULO DAS JOGADAS DO COMPUTADOR %%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-lista_casas(Peca,Tab,Lista):- findall([X,Y],casa_valida(X,Y,Peca,Tab),Lista).
+lista_casas(Peca,Tab,Lista):- findall((X,Y),casa_valida(X,Y,Peca,Tab),Lista).
 
-escolhe_casa([[X|Y]|_],X,Y).
+escolhe_casa([(X,Y)|_],X2,Y2):- X2 is X, Y2 is Y.
 
 lista_jogadas(J,Tab,Lista):-
-            findall([X,Y,Xf,Yf],movimento_valido_aux(J,X,Y,Xf,Yf,Tab),Lista).
+            findall((X,Y,Xf,Yf),movimento_valido_aux(J,X,Y,Xf,Yf,Tab),Lista).
+
+escolhe_jogada([(X,Y,Xf,Yf)|_],X2,Y2,X3,Y3):- X2 is X, Y2 is Y, X3 is Xf, Y3 is Yf.
 
 movimento_valido_aux(J,X,Y,Xf,Yf,Tab):- pertence(J,X,Y,Tab),
                                         movimento_valido(X,Y,Xf,Yf,Tab).

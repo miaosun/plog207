@@ -27,10 +27,30 @@ pecas_al([1,1,1,1,1,1,1,1,1,1,1,1]).
 pecas_v([2,2,2,2,2,3]).
 
 %%% Inicio do programa
-start:- welcome,
-        estadoInicial_t2(Tab),
-        pecas_al_t2(P_al), pecas_v_t2(P_v),
-        joga(1,humano,P_al,P_v,Tab).
+start(O):- welcome,
+        %menu_start,
+        load_simples(O,Tab,P_al,P_v),
+        jogador(1,TipoJ),
+        not(joga(1,TipoJ,P_al,P_v,Tab)).
+
+load_simples(1,Tab,P_al,P_v):- tipo_jogo(1, Pl1, Pl2),
+                             assert(jogador(1, Pl1)),
+                             assert(jogador(2, Pl2)),
+                             estadoInicial(Tab),
+                             pecas_al(P_al),
+                             pecas_v(P_v).
+load_simples(2,Tab,P_al,P_v):- tipo_jogo(1, Pl1, Pl2),
+                             assert(jogador(1, Pl1)),
+                             assert(jogador(2, Pl2)),
+                             estadoInicial_t(Tab),
+                             pecas_al_t1(P_al),
+                             pecas_v_t1(P_v).
+load_simples(3,Tab,P_al,P_v):- tipo_jogo(1, Pl1, Pl2),
+                             assert(jogador(1, Pl1)),
+                             assert(jogador(2, Pl2)),
+                             estadoInicial_t2(Tab),
+                             pecas_al_t2(P_al),
+                             pecas_v_t2(P_v).
 
 %% Welcome %%
 welcome:-
@@ -51,19 +71,17 @@ menu_start:-
        write('*   4.Computador VS Computador   *'),nl,
        write('*                                *'),nl,
        write('**********************************'),nl,nl,
-       write('faca a sua escolha'),nl,repeat, get_code(Op), conv(Op,O),
-       menu_lvl,
-       write('faca a sua escolha'),nl,repeat, get_code(Op), conv(Op,O),
-       tipo_jogo(O, Pl1, Pl2),
+       repeat, write('faca a sua escolha: '), (get_code(Op), conv(Op,O),
+       tipo_jogo(O, Pl1, Pl2)), !,
        assert(jogador(1, Pl1)),
        assert(jogador(2, Pl2)).
 
 %% define o tipo de jogo
 %% tipo_jogo(Op, Pl1, Pl2)
 tipo_jogo(1, humano, humano).
-tipo_jogo(2, computador, humano).
-tipo_jogo(3, humano, computador).
-tipo_jogo(4, computador, computador).
+%tipo_jogo(2, computador, humano).
+%tipo_jogo(3, humano, computador).
+%tipo_jogo(4, computador, computador).
 
 menu_lvl:-
        write('**********************************'),nl,
@@ -155,23 +173,6 @@ vizinho(X,Y,3,Xf,Yf):- Y=\=0, X=\=0, Xf is X-1, Yf is Y-1.  %Noroeste
 
 e_vizinho(X,Y,Xf,Yf):- vizinho(X,Y,D,Xf,Yf).
 
-/*
-% get_vizinhos(X,Y,Tab,LV,Dir) devolve em LV uma lista dos valores dos vizinhos
-% Dir deve ser passado com 0
-get_vizinhos(X,Y,Tab,LV):- get_vizinhos_aux(X,Y,Tab,LV,0), !.
-get_vizinhos_aux(_,_,_,[],4).
-get_vizinhos_aux(X,Y,Tab,[V|Resto],Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
-                               get_casa(X2,Y2,V,Tab),
-                               Dir2 is Dir+1,
-                               get_vizinhos_aux(X,Y,Tab,Resto,Dir2).
-
-% verifica se nao existe nenhum vizinho inimigo
-naoTemInimigos(_,[]).
-naoTemInimigos(Peca,[H|T]):- Peca=:=1, H=\=2; H=\=3,
-                                naoTemInimigos(Peca,T).
-naoTemInimigos(Peca,[H|T]):- (Peca=:=2; Peca=:=3), H=\=1,
-                                naoTemInimigos(Peca,T).
-*/
 esta_seguro(X,Y,Peca,Tab):- esta_seguro_aux(X,Y,Peca,Tab,0), !.
 esta_seguro_aux(_,_,_,_,4).
 esta_seguro_aux(X,Y,1,Tab,Dir):- Dir<4, vizinho(X,Y,Dir,X2,Y2),
@@ -189,15 +190,15 @@ esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                esta_seguro_aux(X,Y,1,Tab,Dir2).
 esta_seguro_aux(X,Y,P,Tab,Dir):- P=\=1, Dir<4, vizinho(X,Y,Dir,X2,Y2),
                                get_casa(X2,Y2,V,Tab), V=:=1, oposto(Dir, Dir3),
-                               vizinho(X,Y,Dir3,Xo,Yo), get_casa(Xo,Yo,P,Tab),
-                               P=\=0, Dir2 is Dir+1,
+                               vizinho(X,Y,Dir3,Xo,Yo), not(casa_livre(Xo,Yo,Tab)),
+                               Dir2 is Dir+1,
                                esta_seguro_aux(X,Y,1,Tab,Dir2).
 
 oposto(Dir, Dir2):- (Dir=:=1; Dir=:=2), Dir2 is Dir+2.
 oposto(Dir, Dir2):- (Dir=:=3; Dir=:=4), Dir2 is Dir-2.
 
 
-casa_valida(X,Y,Peca,Tab):- get_casa(X,Y,P2,Tab), P2=:=0,
+casa_valida(X,Y,Peca,Tab):- casa_livre(X,Y,Tab),
                             esta_seguro(X,Y,Peca,Tab).
                             
 casa_livre(X,Y,Tab):- get_casa(X,Y,P,Tab), P=:=0.
@@ -250,7 +251,7 @@ na_linha_come_nosferatu_aux(X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
                                                na_linha_come_nosferatu_aux(X3,Y3,Xf,Yf,D,Tab).
 
 escolhe_peca(J,X,Y,Tab):- repeat, (write('Escolha a peca que pretende mover\n'),
-                          pede_casa(X,Y)), pertence(J,X,Y,Tab), !.
+                          pede_casa(X,Y)), pertence(J,X,Y,Tab),!.
                           
 escolhe_move(X,Y,Xf,Yf,Tab):- repeat, (write('Escolha a casa para onde pertende mover\n'),
                               pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab),!.
@@ -275,7 +276,7 @@ joga(J,humano,[],[],Tab):- mostra_tabuleiro(Tab),
 %% para quando os vampiros jogam e os aldeoes inserem pecas
 joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
                              escreve_vez(2),
-                          rescolhe_peca(2,X,Y,Tab),
+                          escolhe_peca(2,X,Y,Tab),
                           escolhe_move(X,Y,Xf,Yf,Tab),
                           exec_move(X,Y,Xf,Yf,Tab,TabN),
                           not(verifica_fim(TabN)), !,
@@ -283,20 +284,57 @@ joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
                                      escreve_vez(1),
                                      insere_peca(Peca,Tab,TabN),
-                                     joga(2,humano,Resto,[],TabN).
+                                     jogador(2,TipoJ),
+                                     joga(2,TipoJ,Resto,[],TabN).
+joga(1,computador,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
+                                         escreve_vez(1),
+                                         lista_casas(Peca,Tab,Lista),
+                                         escolhe_casa(Lista,X,Y),
+                                         muda_tab(Peca,X,Y,Tab,Ntab),
+                                         jogador(2,TipoJ),
+                                         joga(2,TipoJ,Resto,[],Ntab).
 
 %% para quando todos inserem pecas
 joga(1,humano,[Peca|Resto],L_v,Tab):- mostra_tabuleiro(Tab),
                                       escreve_vez(1),
                                       insere_peca(Peca,Tab,TabN),
-                                      joga(2,humano,Resto,L_v,TabN).
+                                      jogador(2,TipoJ),
+                                      joga(2,TipoJ,Resto,L_v,TabN).
 joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
                                        escreve_vez(2),
                                        insere_peca(Peca,Tab,TabN),
-                                       joga(1,humano,P_al,Resto,TabN).
+                                       jogador(1,TipoJ),
+                                       joga(1,TipoJ,P_al,Resto,TabN).
+joga(1,computador,[Peca|Resto],L_v,Tab):- mostra_tabuleiro(Tab),
+                                          escreve_vez(1),
+                                          lista_casas(Peca,Tab,Lista),
+                                          escolhe_casa(Lista,X,Y),
+                                          muda_tab(Peca,X,Y,Tab,Ntab),
+                                          jogador(2,TipoJ),
+                                          joga(2,TipoJ,Resto,L_v,Ntab).
+joga(2,computador,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
+                                          escreve_vez(2),
+                                          lista_casas(Peca,Tab,Lista),
+                                          escolhe_casa(Lista,X,Y),
+                                          muda_tab(Peca,X,Y,Tab,Ntab),
+                                          jogador(1,TipoJ),
+                                          joga(1,TipoJ,P_al,Resto,Ntab).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%% PARA CALCULO DAS JOGADAS DO COMPUTADOR %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+lista_casas(Peca,Tab,Lista):- findall([X,Y],casa_valida(X,Y,Peca,Tab),Lista).
+
+escolhe_casa([[X|Y]|_],X,Y).
+
+lista_jogadas(J,Tab,Lista):-
+            findall([X,Y,Xf,Yf],movimento_valido_aux(J,X,Y,Xf,Yf,Tab),Lista).
+
+movimento_valido_aux(J,X,Y,Xf,Yf,Tab):- pertence(J,X,Y,Tab),
+                                        movimento_valido(X,Y,Xf,Yf,Tab).
+                                        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % verifica se algum jogador ganhou
 verifica_fim(Tab):- ganhou(Jg,Tab), Jg=:=1, mostra_tabuleiro(Tab),

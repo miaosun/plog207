@@ -30,7 +30,7 @@ pecas_v([2,2,2,2,2,3]).
 start(O):- welcome,
         %menu_start,
         load_simples(O,Tab,P_al,P_v),
-        jogador(1,TipoJ), write(TipoJ), nl,
+        jogador(1,TipoJ),
         not(joga(1,TipoJ,P_al,P_v,Tab)).
         
 load_simples(0,Tab,P_al,P_v):- menu_start,
@@ -48,8 +48,8 @@ load_simples(2,Tab,P_al,P_v):- tipo_jogo(1, Pl1, Pl2),
                              assert(jogador(1, Pl1)),
                              assert(jogador(2, Pl2)),
                              estadoInicial_t(Tab),
-                             pecas_al_t1(P_al),
-                             pecas_v_t1(P_v).
+                             pecas_al_t(P_al),
+                             pecas_v_t(P_v).
 load_simples(3,Tab,P_al,P_v):- tipo_jogo(1, Pl1, Pl2),
                              assert(jogador(1, Pl1)),
                              assert(jogador(2, Pl2)),

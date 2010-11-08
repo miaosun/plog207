@@ -205,8 +205,8 @@ casa_livre(X,Y,Tab):- get_casa(X,Y,P,Tab), P=:=0.
 pertence(1,X,Y,Tab):- get_casa(X,Y,P,Tab), P=:=1.
 pertence(2,X,Y,Tab):- get_casa(X,Y,P,Tab), (P=:=2; P=:=3).
 
-escreve_vez(1):- write('Vez dos aldeoes\n').
-escreve_vez(2):- write('Vez dos vampiros\n').
+escreve_vez(1):- write('Vez dos aldeoes\n\n').
+escreve_vez(2):- write('Vez dos vampiros\n\n').
 
 % para ver se as duas posicoes estao na mesma linha
 na_linha_livre(X,Y,Xf,Yf,Tab):- direccao(X,Y,Xf,Yf,D),
@@ -249,7 +249,12 @@ na_linha_come_nosferatu_aux(X,Y,Xf,Yf,D,Tab):- vizinho(X,Y,D,X2,Y2),
                                                P2=:=0,
                                                na_linha_come_nosferatu_aux(X3,Y3,Xf,Yf,D,Tab).
 
-
+escolhe_peca(J,X,Y,Tab):- repeat, (write('Escolha a peca que pretende mover\n'),
+                          pede_casa(X,Y)), pertence(J,X,Y,Tab), !.
+                          
+escolhe_move(X,Y,Xf,Yf,Tab):- repeat, (write('Escolha a casa para onde pertende mover\n'),
+                              pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab),!.
+                              
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% JOGAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -260,22 +265,20 @@ troca(2,1).
 %% para quando todos jogam
 joga(J,humano,[],[],Tab):- mostra_tabuleiro(Tab),
                            escreve_vez(J),
-                           repeat, (write('Escolha a peca que pretende mover\n'),
-                           pede_casa(X,Y)), pertence(J,X,Y,Tab),
-                           repeat, (write('Escolha a casa para onde pertende mover\n'),
-                           pede_casa(Xf,Yf)), movimento_valido(X,Y,Xf,Yf,Tab),
+                           escolhe_peca(J,X,Y,Tab),
+                           escolhe_move(X,Y,Xf,Yf,Tab),
                            exec_move(X,Y,Xf,Yf,Tab,TabN),
                            troca(J,J2),
+                           not(verifica_fim(TabN)), !,
                            joga(J2,humano,[],[],TabN).
 
 %% para quando os vampiros jogam e os aldeoes inserem pecas
 joga(2,humano,P_al,[],Tab):- mostra_tabuleiro(Tab),
                              escreve_vez(2),
-                          repeat, (write('Escolha a peca que pretende mover\n'),
-                          pede_casa(X,Y)), pertence(2,X,Y,Tab),
-                          repeat, (write('Escolha a casa para onde pertende mover\n'), pede_casa(Xf,Yf)),
-                          movimento_valido(X,Y,Xf,Yf,Tab),
+                          rescolhe_peca(2,X,Y,Tab),
+                          escolhe_move(X,Y,Xf,Yf,Tab),
                           exec_move(X,Y,Xf,Yf,Tab,TabN),
+                          not(verifica_fim(TabN)), !,
                           joga(1,humano,P_al,[],TabN).
 joga(1,humano,[Peca|Resto],[],Tab):- mostra_tabuleiro(Tab),
                                      escreve_vez(1),
@@ -294,6 +297,12 @@ joga(2,humano,P_al,[Peca|Resto],Tab):- mostra_tabuleiro(Tab),
 
 
 %%%%%%%%%%%%%%%%%%%%%% PARA VER DEPOIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% verifica se algum jogador ganhou
+verifica_fim(Tab):- ganhou(Jg,Tab), Jg=:=1, mostra_tabuleiro(Tab),
+                    write('\Ganharam os Aldeoes!').
+verifica_fim(Tab):- ganhou(Jg,Tab), Jg=:=2, mostra_tabuleiro(Tab),
+                    write('\Ganharam os Vampiros!').
 
 % apenas movimentos simples
 movimento_valido(X,Y,Xf,Yf,Tab):- casa_livre(Xf,Yf,Tab),
@@ -331,7 +340,7 @@ exec_move(X,Y,Xf,Yf,Tab,TabN):- na_linha_come_nosferatu(X,Y,Xf,Yf,Tab),
                                 (write('Que pretende fazer com a(s) peça(s) que capturou?\n'),
                                 write('1-Comer\n2-Transformar em vampiro\n\nOpcao: '),
                                 read(O)), (O=:=1; O=:=2),
-                                direccao(X,Y,Xf,Yf,D), write('vai chamar limpa_linha\n'),
+                                direccao(X,Y,Xf,Yf,D),
                                 limpa_linha(O,X,Y,Xf,Yf,D,Tab,Ntab),
                                 muda_tab(0,X,Y,Ntab,Ntab2),
                                 muda_tab(3,Xf,Yf,Ntab2,TabN).
@@ -354,9 +363,10 @@ limpa_linha(O,X,Y,Xf,Yf,D,Tab,Ntab):- vizinho(X,Y,D,X2,Y2),
                                       limpa_linha(O,X2,Y2,Xf,Yf,D,Ntab2,Ntab).
 
 
-ganhou(_,[]):-!.
+ganhou(_,[]).
 ganhou(1,[H|R]):-ganhou_aux(1,H), ganhou(1,R).
 ganhou(2,[H|R]):-ganhou_aux(2,H), ganhou(2,R).
+ganhou_aux(_,[]).
 ganhou_aux(1,[H|T]):-H=\=3, ganhou_aux(1,T).
 ganhou_aux(2,[H|T]):-H=\=1, ganhou_aux(2,T).
 

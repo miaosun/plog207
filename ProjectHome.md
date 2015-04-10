@@ -1,0 +1,1 @@
+Desenvolver um jogo tabuleiro que chama se "nosferatu", em linguagem prolog.
